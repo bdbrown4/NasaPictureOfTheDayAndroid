@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.text.method.ScrollingMovementMethod
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
@@ -17,7 +18,7 @@ import java.util.concurrent.Executors
 class MainActivity : AppCompatActivity() {
     private lateinit var apiService: ApiService
     private lateinit var imageView: ImageView
-    private lateinit var date: TextView
+    private lateinit var date: DatePicker
     private lateinit var textView: TextView
     private lateinit var button: Button
     private lateinit var image: Bitmap
@@ -40,9 +41,17 @@ class MainActivity : AppCompatActivity() {
         button = findViewById(R.id.button)
     }
 
+    private fun convertDatePickerSelectedDatetoString(): String {
+        val year = date.year
+        val month = padIntLessThan10(date.month + 1)
+        val day = padIntLessThan10(date.dayOfMonth)
+        return "${year}-${month}-${day}"
+    }
+
+    private fun padIntLessThan10(number: Int): String = if (number >= 10) number.toString() else "0${number}"
+
     private suspend fun processRequest() {
-        val dateToString = date.text.toString()
-        val pictureOfTheDay = apiService.getPictureOfTheDay(Constants.API_KEY, dateToString)
+        val pictureOfTheDay = apiService.getPictureOfTheDay(Constants.API_KEY, convertDatePickerSelectedDatetoString())
         val executor = Executors.newSingleThreadExecutor()
         val handler = Handler(Looper.getMainLooper())
         executor.execute {
