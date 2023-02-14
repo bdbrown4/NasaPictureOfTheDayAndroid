@@ -11,8 +11,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
@@ -23,11 +21,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textView: TextView
     private lateinit var button: Button
     private lateinit var image: Bitmap
-    private val apiKey: String = "your-api-key";
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initViews()
+        apiService = ApiService.create()
         button.setOnClickListener {
             lifecycleScope.launch {
                 processRequest()
@@ -36,7 +34,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        apiService = ApiService.create()
         imageView = findViewById(R.id.imageView)
         textView = findViewById(R.id.textView)
         date = findViewById(R.id.editTextDate)
@@ -45,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun processRequest() {
         val dateToString = date.text.toString()
-        val pictureOfTheDay = apiService.getPictureOfTheDay(apiKey, dateToString)
+        val pictureOfTheDay = apiService.getPictureOfTheDay(Constants.API_KEY, dateToString)
         val executor = Executors.newSingleThreadExecutor()
         val handler = Handler(Looper.getMainLooper())
         executor.execute {
