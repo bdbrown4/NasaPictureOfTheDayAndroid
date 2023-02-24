@@ -2,7 +2,6 @@ package project.nasapictureoftheday
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -11,25 +10,31 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
+
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private lateinit var apiService: ApiService
     private lateinit var imageView: ImageView
     private lateinit var date: DatePicker
     private lateinit var textView: TextView
     private lateinit var button: Button
     private lateinit var image: Bitmap
+    private val mainViewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initViews()
-        apiService = ApiService.create()
         button.setOnClickListener {
             lifecycleScope.launch {
-                processRequest()
+                var pictureOfTheDay = mainViewModel.processRequest(Constants.API_KEY, convertDatePickerSelectedDateToString())
+                processResponse(pictureOfTheDay)
             }
         }
     }
@@ -41,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         button = findViewById(R.id.button)
     }
 
-    private fun convertDatePickerSelectedDatetoString(): String {
+    private fun convertDatePickerSelectedDateToString(): String {
         val year = date.year
         val month = padIntLessThan10(date.month + 1)
         val day = padIntLessThan10(date.dayOfMonth)
@@ -50,8 +55,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun padIntLessThan10(number: Int): String = if (number >= 10) number.toString() else "0${number}"
 
-    private suspend fun processRequest() {
-        val pictureOfTheDay = apiService.getPictureOfTheDay(Constants.API_KEY, convertDatePickerSelectedDatetoString())
+    private fun processResponse(pictureOfTheDay: PictureOfTheDay) {
         val executor = Executors.newSingleThreadExecutor()
         val handler = Handler(Looper.getMainLooper())
         executor.execute {

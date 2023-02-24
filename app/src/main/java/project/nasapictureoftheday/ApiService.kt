@@ -20,3 +20,9 @@ interface ApiService {
         }
     }
 }
+
+class ApiServiceImpl(): ApiService {
+    override suspend fun getPictureOfTheDay(apiKey: String, date: String): PictureOfTheDay {
+        return ApiService.create().getPictureOfTheDay(apiKey, date)
+    }
+}
